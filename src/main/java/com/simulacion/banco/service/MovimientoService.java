@@ -1,6 +1,8 @@
 package com.simulacion.banco.service;
 
+import com.simulacion.banco.dto.MovimientoDto;
 import com.simulacion.banco.dto.ReporteDto;
+import com.simulacion.banco.entity.Cuenta;
 import com.simulacion.banco.entity.Movimiento;
 
 import java.math.BigDecimal;
@@ -8,7 +10,7 @@ import java.time.LocalDateTime;
 
 public interface MovimientoService {
 
-    Movimiento registrarMovimiento(Integer cuentaId, Movimiento movimiento);
+    MovimientoDto registrarMovimiento(Integer cuentaId, MovimientoDto movimiento);
 
     BigDecimal reporteMovimientos(Integer cuentaId, Movimiento.tipoMovimiento tipo,
                                            LocalDateTime fechaInicio, LocalDateTime fechaFin);

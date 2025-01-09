@@ -1,13 +1,12 @@
 package com.simulacion.banco.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +25,7 @@ public class Cliente {
     private String direccion;
     private String telefono;
 
-    //@JsonBackReference
-
-    @JsonManagedReference
+    @JsonManagedReference // permite que el lado "propietario" de la relación se serialice normalmente.
     @OneToMany (mappedBy = "cliente")
     private List<Cuenta> cuentas = new ArrayList<>();
 }

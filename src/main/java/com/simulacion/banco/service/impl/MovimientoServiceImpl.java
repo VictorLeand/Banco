@@ -1,7 +1,10 @@
 package com.simulacion.banco.service.impl;
 
 import com.simulacion.banco.dto.CuentaReporteDto;
+import com.simulacion.banco.dto.MovimientoDto;
 import com.simulacion.banco.dto.ReporteDto;
+import com.simulacion.banco.dto.mapper.CuentaMapper;
+import com.simulacion.banco.dto.mapper.MovimientoMapper;
 import com.simulacion.banco.entity.Cliente;
 import com.simulacion.banco.entity.Cuenta;
 import com.simulacion.banco.entity.Movimiento;
@@ -9,6 +12,7 @@ import com.simulacion.banco.exception.AccountsEmptyException;
 import com.simulacion.banco.exception.InsufficienteMoneyException;
 import com.simulacion.banco.exception.InvalidDateException;
 
+import com.simulacion.banco.exception.MovimientoEmptyException;
 import com.simulacion.banco.repository.RepositoryMovimiento;
 import com.simulacion.banco.service.MovimientoService;
 import lombok.extern.slf4j.Slf4j;
@@ -31,36 +35,68 @@ public class MovimientoServiceImpl implements MovimientoService {
 
     private final ClienteServiceImpl clienteService;
 
-    public MovimientoServiceImpl(RepositoryMovimiento repositoryMovimiento, ClienteServiceImpl clienteService, CuentaServiceImpl cuentaService) {
+    private final CuentaMapper cuentaMapper;
+
+    private final MovimientoMapper movimientoMapper;
+
+    public MovimientoServiceImpl(RepositoryMovimiento repositoryMovimiento, ClienteServiceImpl clienteService, CuentaServiceImpl cuentaService, CuentaMapper cuentaMapper, MovimientoMapper movimientoMapper) {
         this.repositoryMovimiento = repositoryMovimiento;
         this.clienteService = clienteService;
         this.cuentaService = cuentaService;
+        this.cuentaMapper = cuentaMapper;
+        this.movimientoMapper = movimientoMapper;
+    }
+
+    private void validarMovimientos(MovimientoDto movimiento, Cuenta cuenta){
+
+        if (movimiento == null || movimiento.getTipo() == null || movimiento.getValor() == null){
+            throw new MovimientoEmptyException("El movimiento o su valor no pueden ser nulos");
+        }
+
+        if  (movimiento.getTipo() == MovimientoDto.tipoMovimiento.DEBITO &&
+                movimiento.getValor().compareTo(cuenta.getSaldo()) > 0) {
+            throw new InsufficienteMoneyException("Saldo insuficiente para realizar el movimiento");
+        }
+
+    }
+
+    private void validarFechas (LocalDateTime fechaInicio, LocalDateTime fechaFinal, Cliente cliente){
+
+        if (fechaInicio == null || fechaFinal == null || fechaInicio.isAfter(fechaFinal)) {
+            throw new InvalidDateException("El rango de fechas no es válida");
+        }
+
+        if (cliente.getCuentas().isEmpty()) {
+            throw new AccountsEmptyException("Este cliente no tiene cuentas asociadas");
+        }
     }
 
     @Override
-    public Movimiento registrarMovimiento(Integer Id, Movimiento movimiento) {
-        if (movimiento == null || movimiento.getTipo() == null || movimiento.getValor() == null){
-            throw new IllegalArgumentException("El movimiento o su valor no pueden ser nulos");
-        }
+    public MovimientoDto registrarMovimiento(Integer Id, MovimientoDto movimiento) {
+
         Cuenta cuenta = cuentaService.consultarCuenta(Id);
-        if (movimiento.getTipo() == Movimiento.tipoMovimiento.DEBITO) {
-            if ((movimiento.getValor()).compareTo(cuenta.getSaldo()) > 0) {
-                throw new InsufficienteMoneyException("Saldo insuficiente para realizar el movimiento");
-            }
+
+        validarMovimientos(movimiento, cuenta);
+
+
+
+        if (movimiento.getTipo() == MovimientoDto.tipoMovimiento.DEBITO) {
+
             cuenta.setSaldo(cuenta.getSaldo().subtract(movimiento.getValor()));
             log.info("Retiro exitoso por valor de = {}. El nuevo saldo de la cuenta es de = {}",
                    movimiento.getValor(), cuenta.getSaldo());
 
-        } else if (movimiento.getTipo() == Movimiento.tipoMovimiento.CREDITO) {
+        } else if (movimiento.getTipo() == MovimientoDto.tipoMovimiento.CREDITO) {
             cuenta.setSaldo(cuenta.getSaldo().add(movimiento.getValor()));
             log.info("Consignación exitosa por valor de = {}. El nuevo saldo de la cuenta es de = {}",
                     movimiento.getValor(), cuenta.getSaldo());
         } else {
             throw new IllegalArgumentException("Debe elegir un movimiento");
         }
+
         cuentaService.actualizarCuenta(cuenta);
-        movimiento.setCuenta(cuenta);
-        return repositoryMovimiento.save(movimiento);
+        movimiento.setCuenta(cuentaMapper.toDto(cuenta));
+        return movimientoMapper.toDto( repositoryMovimiento.save(movimientoMapper.toEntity(movimiento)) );
     }
 
     @Override
@@ -70,14 +106,9 @@ public class MovimientoServiceImpl implements MovimientoService {
 
     public ReporteDto reporteCliente(Integer clienteId, LocalDateTime fechaInicio, LocalDateTime fechaFinal) {
 
-        if (fechaInicio == null || fechaFinal == null || fechaInicio.isAfter(fechaFinal)){
-            throw new InvalidDateException("El rango de fechas no es válida");
-        }
-
         Cliente cliente = clienteService.consultarCliente(clienteId);
-        if (cliente.getCuentas().isEmpty()){
-            throw new AccountsEmptyException("Este cliente no tiene cuentas asociadas");
-        }
+
+       validarFechas(fechaInicio, fechaFinal, cliente);
 
         log.info("Generando reporte para el cliente: {} (Id: {})", cliente.getNombre(), clienteId);
 
@@ -91,7 +122,7 @@ public class MovimientoServiceImpl implements MovimientoService {
             log.info("Número de cuenta: {} | Total Débitos: {} | Total Créditos: {}",
                     cuenta.getNumero(), totalDebitos, totalCreditos);
 
-            return new CuentaReporteDto (cuenta.getNumero(),
+            return new CuentaReporteDto(cuenta.getNumero(),
                     cuenta.getSaldo(),
                     totalDebitos != null ? totalDebitos : BigDecimal.ZERO,
                     totalCreditos != null ? totalCreditos : BigDecimal.ZERO
@@ -103,7 +134,9 @@ public class MovimientoServiceImpl implements MovimientoService {
                 cliente.getDireccion(),
                 cliente.getTelefono(),
                 cuentas);
+
     }
+
 }
 
 

@@ -23,7 +23,7 @@ public class Cuenta {
     private Long numero;
     private BigDecimal saldo;
 
-        //@JsonBackReference
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "id_cliente", referencedColumnName = "id")
     private Cliente cliente;

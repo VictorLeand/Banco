@@ -32,7 +32,8 @@ public class Movimiento {
     //@JoinColumn(name = "id_cliente", referencedColumnName = "id")
     //private Cliente cliente;
 
-    //@JsonBackReference
+    @JsonBackReference // evita que el lado "no propietario" (el que depende del primero) se serialice,
+    // evitando así que se produzca un ciclo infinito al tratar de serializar ambos lados de la relación.
     @ManyToOne
     @JoinColumn(name = "id_cuenta", referencedColumnName = "id")
     private Cuenta cuenta;

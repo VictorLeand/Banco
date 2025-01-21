@@ -3,6 +3,7 @@ package com.simulacion.banco.controller;
 import com.simulacion.banco.dto.MovimientoDto;
 import com.simulacion.banco.dto.ReporteDto;
 import com.simulacion.banco.entity.Movimiento;
+import com.simulacion.banco.enums.TipoMovimiento;
 import com.simulacion.banco.service.impl.MovimientoServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -25,7 +26,7 @@ public class MovimientoController {
 
     @GetMapping("/obtener-movimientos")
     public ResponseEntity<ReporteDto> obtenerMovimientos (@RequestParam Integer cuentaId,
-                                                          @RequestParam Movimiento.tipoMovimiento tipo,
+                                                          @RequestParam TipoMovimiento tipo,
                                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
                                                           @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaFinal){
         return ResponseEntity.ok().body(movimientoService.reporteCliente(cuentaId, fechaInicio, fechaFinal));

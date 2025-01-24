@@ -1,6 +1,7 @@
 package com.simulacion.banco.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.simulacion.banco.enums.TipoMovimiento;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -14,10 +15,6 @@ import java.time.LocalDateTime;
 @Table(name = "movimiento")
 public class Movimiento {
 
-    public enum tipoMovimiento{
-        CREDITO, DEBITO
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
@@ -25,7 +22,7 @@ public class Movimiento {
     private BigDecimal valor;
     private LocalDateTime fecha;
     @Enumerated(EnumType.STRING)
-    private tipoMovimiento tipo;
+    private TipoMovimiento tipo;
 
     //@JsonBackReference
     //@ManyToOne

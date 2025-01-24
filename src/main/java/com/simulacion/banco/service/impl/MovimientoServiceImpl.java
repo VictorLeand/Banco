@@ -8,6 +8,7 @@ import com.simulacion.banco.dto.mapper.MovimientoMapper;
 import com.simulacion.banco.entity.Cliente;
 import com.simulacion.banco.entity.Cuenta;
 import com.simulacion.banco.entity.Movimiento;
+import com.simulacion.banco.enums.TipoMovimiento;
 import com.simulacion.banco.exception.AccountsEmptyException;
 import com.simulacion.banco.exception.InsufficienteMoneyException;
 import com.simulacion.banco.exception.InvalidDateException;
@@ -53,7 +54,7 @@ public class MovimientoServiceImpl implements MovimientoService {
             throw new MovimientoEmptyException("El movimiento o su valor no pueden ser nulos");
         }
 
-        if  (movimiento.getTipo() == MovimientoDto.tipoMovimiento.DEBITO &&
+        if  (movimiento.getTipo() == TipoMovimiento.DEBITO &&
                 movimiento.getValor().compareTo(cuenta.getSaldo()) > 0) {
             throw new InsufficienteMoneyException("Saldo insuficiente para realizar el movimiento");
         }
@@ -72,21 +73,21 @@ public class MovimientoServiceImpl implements MovimientoService {
     }
 
     @Override
-    public MovimientoDto registrarMovimiento(Integer Id, MovimientoDto movimiento) {
+    public MovimientoDto registrarMovimiento(Integer cuentaId, MovimientoDto movimiento) {
 
-        Cuenta cuenta = cuentaService.consultarCuenta(Id);
+        Cuenta cuenta = cuentaService.consultarCuenta(cuentaId);
 
         validarMovimientos(movimiento, cuenta);
 
 
 
-        if (movimiento.getTipo() == MovimientoDto.tipoMovimiento.DEBITO) {
+        if (movimiento.getTipo() == TipoMovimiento.DEBITO) {
 
             cuenta.setSaldo(cuenta.getSaldo().subtract(movimiento.getValor()));
             log.info("Retiro exitoso por valor de = {}. El nuevo saldo de la cuenta es de = {}",
                    movimiento.getValor(), cuenta.getSaldo());
 
-        } else if (movimiento.getTipo() == MovimientoDto.tipoMovimiento.CREDITO) {
+        } else if (movimiento.getTipo() == TipoMovimiento.CREDITO) {
             cuenta.setSaldo(cuenta.getSaldo().add(movimiento.getValor()));
             log.info("Consignación exitosa por valor de = {}. El nuevo saldo de la cuenta es de = {}",
                     movimiento.getValor(), cuenta.getSaldo());
@@ -100,7 +101,7 @@ public class MovimientoServiceImpl implements MovimientoService {
     }
 
     @Override
-    public BigDecimal reporteMovimientos(Integer cuentaId, Movimiento.tipoMovimiento tipo, LocalDateTime fechaInicio, LocalDateTime fechaFinal) {
+    public BigDecimal reporteMovimientos(Integer cuentaId, TipoMovimiento tipo, LocalDateTime fechaInicio, LocalDateTime fechaFinal) {
         return repositoryMovimiento.reporteMovimientos(cuentaId, tipo, fechaInicio, fechaFinal);
     }
 
@@ -114,10 +115,10 @@ public class MovimientoServiceImpl implements MovimientoService {
 
         List<CuentaReporteDto> cuentas = cliente.getCuentas().stream().map(cuenta -> {
             BigDecimal totalDebitos = repositoryMovimiento.reporteMovimientos(
-                    cuenta.getId(), Movimiento.tipoMovimiento.DEBITO, fechaInicio, fechaFinal);
+                    cuenta.getId(), TipoMovimiento.DEBITO, fechaInicio, fechaFinal);
 
             BigDecimal totalCreditos = repositoryMovimiento.reporteMovimientos(
-                    cuenta.getId(), Movimiento.tipoMovimiento.CREDITO, fechaInicio, fechaFinal);
+                    cuenta.getId(), TipoMovimiento.CREDITO, fechaInicio, fechaFinal);
 
             log.info("Número de cuenta: {} | Total Débitos: {} | Total Créditos: {}",
                     cuenta.getNumero(), totalDebitos, totalCreditos);

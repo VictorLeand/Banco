@@ -1,5 +1,6 @@
 package com.simulacion.banco.dto;
 
+import com.simulacion.banco.enums.TipoMovimiento;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,13 +11,9 @@ import java.time.LocalDateTime;
 @Setter
 public class MovimientoDto {
 
-    public enum tipoMovimiento{
-        CREDITO, DEBITO
-    }
-
     private Integer id;
     private BigDecimal valor;
     private LocalDateTime fecha;
-    private MovimientoDto.tipoMovimiento tipo;
+    private TipoMovimiento tipo;
     private CuentaDto cuenta;
 }

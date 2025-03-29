@@ -6,6 +6,8 @@ import com.simulacion.banco.repository.RepositoryCliente;
 import com.simulacion.banco.service.ClienteService;
 import com.simulacion.banco.util.ExportUtil;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,5 +69,10 @@ public class ClienteServiceImpl implements ClienteService {
                 )).toList();
 
         ExportUtil.createExcel(data, titulosColumnas, response.getOutputStream());
+    }
+
+    @Override
+    public Page<Cliente> todosLosClientes(Pageable pageable) {
+        return clienteRepository.findAll(pageable);
     }
 }

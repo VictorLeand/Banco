@@ -2,6 +2,8 @@ package com.simulacion.banco.service;
 
 import com.simulacion.banco.entity.Cliente;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
@@ -15,4 +17,5 @@ public interface ClienteService {
     void eliminar(Integer id);
     List<Cliente> todosLosClientes();
     void generarreporte(HttpServletResponse response) throws IOException;
+    Page<Cliente> todosLosClientes(Pageable pageable);
 }

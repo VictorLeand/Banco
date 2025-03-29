@@ -1,9 +1,12 @@
 package com.simulacion.banco.controller;
 
+import com.simulacion.banco.dto.ClientePaginacionDto;
 import com.simulacion.banco.entity.Cliente;
 import com.simulacion.banco.service.impl.ClienteServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,6 +61,11 @@ public class ClienteController {
 
         clienteService.generarreporte(response);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/todos-los-clientes-paginacion")
+    public ResponseEntity<ClientePaginacionDto> todosLosClientes(Pageable pageable) {
+        return ResponseEntity.ok(clienteService.todosLosClientes(pageable));
     }
 
 }

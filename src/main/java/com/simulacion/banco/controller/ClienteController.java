@@ -1,6 +1,7 @@
 package com.simulacion.banco.controller;
 
 import com.simulacion.banco.dto.ClientePaginacionDto;
+import com.simulacion.banco.dto.PaginacionRequestDto;
 import com.simulacion.banco.entity.Cliente;
 import com.simulacion.banco.service.impl.ClienteServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
@@ -63,9 +64,9 @@ public class ClienteController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/todos-los-clientes-paginacion")
-    public ResponseEntity<ClientePaginacionDto> todosLosClientes(Pageable pageable) {
-        return ResponseEntity.ok(clienteService.todosLosClientes(pageable));
+    @PostMapping("/todos-los-clientes-paginacion")
+    public ResponseEntity<ClientePaginacionDto> todosLosClientes(@RequestBody PaginacionRequestDto paginacionRequestDto) {
+        return ResponseEntity.ok(clienteService.todosLosClientes(paginacionRequestDto));
     }
 
 }

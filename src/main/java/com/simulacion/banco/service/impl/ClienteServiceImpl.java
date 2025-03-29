@@ -1,5 +1,7 @@
 package com.simulacion.banco.service.impl;
 
+import com.simulacion.banco.dto.ClientePaginacionDto;
+import com.simulacion.banco.dto.PaginacionRequestDto;
 import com.simulacion.banco.entity.Cliente;
 import com.simulacion.banco.exception.ModelNotFoundException;
 import com.simulacion.banco.repository.RepositoryCliente;
@@ -7,7 +9,9 @@ import com.simulacion.banco.service.ClienteService;
 import com.simulacion.banco.util.ExportUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,7 +76,20 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
-    public Page<Cliente> todosLosClientes(Pageable pageable) {
-        return clienteRepository.findAll(pageable);
+    public ClientePaginacionDto todosLosClientes(PaginacionRequestDto paginacionRequestDto) {
+
+        Pageable pageable = PageRequest.of(
+                paginacionRequestDto.getPage() - 1,
+                paginacionRequestDto.getSize());
+
+        Page<Cliente> clientePage = clienteRepository.findAll(pageable);
+
+        return ClientePaginacionDto.builder()
+                .lista(clientePage.toList())
+                .totalPaginas(clientePage.getTotalPages())
+                .numeroPagina(clientePage.getNumber() + 1)
+                .tamanioPagina(clientePage.toSet().size())
+                .totalElementos((int) clientePage.getTotalElements())
+                .build();
     }
 }
